@@ -18,8 +18,11 @@ const reviewRouter = require("./routes/review");
 const userRouter = require("./routes/user");
 
 // =================== DATABASE =================== //
-const MONGO_URL = "mongodb://127.0.0.1:27017/airbnb";
-mongoose.connect(MONGO_URL)
+const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/airbnb";
+mongoose.connect(MONGO_URL, {
+  serverSelectionTimeoutMS: 30000, // Keep trying to send operations for 30 seconds
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+})
   .then(() => console.log("Connected to MongoDB"))
   .catch(err => console.log("MongoDB connection error:", err));
 

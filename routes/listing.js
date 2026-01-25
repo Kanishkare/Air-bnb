@@ -23,7 +23,7 @@ function validateListing(req, res, next) {
 router.get(
   "/",
   wrapAsync(async (req, res) => {
-    const allListings = await Listing.find({}).populate("owner"); // ✅ fixed
+    const allListings = await Listing.find({}, {}, { maxTimeMS: 30000 }).populate("owner"); // ✅ fixed
     res.render("listings/index.ejs", { listings: allListings });  // ✅ fixed
   })
 );
