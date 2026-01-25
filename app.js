@@ -1,93 +1,91 @@
-const express=require("express");
-const app=express();
-const mongoose=require("mongoose");
-const Listing=require("./models/listing.js");
-const path=require("path");
-const methodOverride=require("method-override");
-const ejsMate=require("ejs-mate");
+const express = require("express");
+const app = express();
+const mongoose = require("mongoose");
+const path = require("path");
+const methodOverride = require("method-override");
+const ejsMate = require("ejs-mate");
+const session = require("express-session");
+const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
 
-const MONGO_URL="mongodb://127.0.0.1:27017/airbnb";
-main().then(()=>{
-    console.log("Connected to MongoDB");
-}).catch(err=>{
-    console.log("Error connecting to MongoDB",err);
-})
-async function main(){
-    //this url is from mongoose documentation
-    await mongoose.connect(MONGO_URL);
-}
+const Listing = require("./models/listing");
+const Review = require("./models/review");
+const User = require("./models/user");
 
-app.set("view engine","ejs");
-app.set("views",path.join(__dirname,"views"));
-app.use(express.urlencoded({extended: true}));
+const listingRouter = require("./routes/listing");
+const reviewRouter = require("./routes/review");
+const userRouter = require("./routes/user");
+
+// =================== DATABASE =================== //
+const MONGO_URL = "mongodb://127.0.0.1:27017/airbnb";
+mongoose.connect(MONGO_URL)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.log("MongoDB connection error:", err));
+
+// =================== MIDDLEWARE =================== //
+app.engine("ejs", ejsMate);
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.engine('ejs',ejsMate);
-app.use(express.static(path.join(__dirname, "/public")));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/",(req,res)=>{
-    res.send("Hi, I am root");
-});
-//index route
-app.get("/listings",async(req,res)=>{
-    const allListings=await Listing.find({});
-    res.render("listings/index.ejs",{allListings});
+// ========== SESSION + FLASH ========== //
+const sessionConfig = {
+  secret: "mysupersecretcode",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    expires: Date.now() + 7*24*60*60*1000,
+    maxAge: 7*24*60*60*1000,
+  },
+};
+app.use(session(sessionConfig));
+app.use(flash());
 
-});
+// ========== PASSPORT AUTH ========== //
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
-//new route
-app.get("/listings/new",(req,res)=>{
-    res.render("listings/new.ejs")
-});
-
-//show route
-app.get("/listings/:id",async(req,res)=>{
-      const {id}=req.params;
-      const listing=await Listing.findById(id);
-      res.render("listings/show.ejs",{listing});
-
-});
-
-//create route
-app.post("/listings",async(req,res)=>{
-    const newlisting=new Listing(req.body.listing);
-    await newlisting.save();
-    res.redirect("/listings/${id}");
+// ========== GLOBAL VARIABLES ========== //
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
 });
 
-//edit route
-app.get("/listings/:id/edit",async (req,res)=>{
-    let {id}=req.params;
-    const listing=await Listing.findById(id);
-    res.render("listings/edit.ejs",{listing});
-
+// =================== ROUTES =================== //
+app.get("/", (req, res) => {
+  res.redirect("/listings");
 });
 
-//update route
-app.put("/listings/:id",async(req,res)=>{
-    let {id}=req.params;
-    await Listing.findByIdAndUpdate(id, {...req.body.listing});
-    res.redirect(`/listings/${id}`);
+app.use("/", userRouter);                       // Authentication
+app.use("/listings", listingRouter);           // Listings
+app.use("/listings/:id/reviews", reviewRouter);// Reviews nested under listings
+
+// =================== 404 CATCH-ALL =================== //
+// Use app.use without a path to catch all unmatched routes. This
+// avoids passing the '*' pattern into the path-to-regexp parser,
+// which can throw when certain versions treat '*' as a parameter.
+app.use((req, res, next) => {
+  res.status(404).render("listings/error.ejs", { message: "Page Not Found" });
 });
 
-//Delete route
-app.delete("/listings/:id",async(req,res)=>{
-    let {id}=req.params;
-    let deletedListing=await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
-    res.redirect("/listings");
-})
-// app.get("/listings",async (req,res)=>{
-//     let sampleListing=new Listing({
-//         title:"My new Villa",
-//         description:"In the middle of the city",
-//         price:1000000,
-//         location:"Hyderabad",
-//         country:"India",
-//     });
-//     await sampleListing.save();
-//     console.log("Sample saved successfully");
-//     res.send("successfully testing");
-// });
-app.listen(8080,()=>{
-    console.log("Server is listening to port 8080");
+// =================== GLOBAL ERROR HANDLER =================== //
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message = "Something went wrong!" } = err;
+  res.status(statusCode).render("listings/error.ejs", { message });
+});
+
+// =================== START SERVER =================== //
+const PORT = 8080;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

@@ -1,25 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="ie=edge">
-<title>Air bnb</title>
-</head>
-<body>
-    <h3>Listing Details : </h3>
-    <ul>
-       <li>Title : <%= listing.title %></li>
-       <li>Description : <%= listing.description %></li>
-       <li>Price :&#8377; <%= listing.price.toLocaleString("en-IN") %></li>
-        <li>Location : <%= listing.location %></li
-        <li>Country : <%= listing.country%></li>
-    </ul>
-    <br>
-    <a href="/listings/<%=listing._id%>/edit">Edit this Listing</a>
-    <br><br>
-    <form method="POST" action="/listings/<%=listing._id%>?_method=DELETE">
-      <button>Delete this listing</button>
+<% layout("/layouts/boilerplate") %>
+
+<% if(success) { %>
+  <div class="alert alert-success"><%= success %></div>
+<% } %>
+<% if(error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<h3>Listing Details</h3>
+<div class="card listing-card" style="width: 20rem;">
+  <% if (listing.image && listing.image.url) { %>
+    <img src="<%= listing.image.url %>" class="card-img-top" alt="<%= listing.title %>">
+  <% } else { %>
+    <img src="/images/default.jpg" class="card-img-top" alt="Default image">
+  <% } %>
+  <div class="card-body">
+    <h5 class="card-title"><%= listing.title %></h5>
+    <p class="card-text">
+      <i><%= listing.owner ? listing.owner.username : "Unknown Owner" %></i><br/>
+      <%= listing.description %>
+    </p>
+
+    <p><strong>Price:</strong> ₹ <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %></p>
+    <p><strong>Location:</strong> <%= listing.location || "N/A" %></p>
+    <p><strong>Country:</strong> <%= listing.country || "N/A" %></p>
+  </div>
+</div>
+
+<br/>
+
+<% if(currentUser && listing.owner && currentUser._id.equals(listing.owner._id)){ %>
+  <div class="row mb-3">
+    <div class="col-1">
+      <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark">Edit</a>
+    </div>
+    <div class="col-1">
+      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+        <button class="btn btn-dark">Delete</button>
+      </form>
+    </div>
+  </div>
+<% } %>
+
+<% if(currentUser){ %>
+  <div>
+    <h4>Leave a Review</h4>
+    <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+      <div class="mb-3 mt-3">
+        <label for="rating" class="form-label">Rating</label>
+        <input type="range" min="1" max="5" id="rating" name="review[rating]" class="form-control"/>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="comment" class="form-label">Comments</label>
+        <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required></textarea>
+      </div>
+      <div class="invalid-feedback">Please add some comments for reviews</div>
+      <button class="btn btn-outline-dark">Submit</button>
     </form>
-</body>
-</html>
+  </div>
+<% } else { %>
+  <p class="mt-3"><i>Please <a href="/login">login</a> to leave a review.</i></p>
+<% } %>
+
+<hr/>
+
+<p><b>All Reviews</b></p>
+<% if(listing.reviews && listing.reviews.length > 0){ %>
+  <% for(let i = 0; i < listing.reviews.length; i += 2) { %>
+    <div class="row">
+      <% for(let j = i; j < i + 2 && j < listing.reviews.length; j++) { 
+           let review = listing.reviews[j]; %>
+        <div class="col-md-6 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title"><%= review.title || 'Review' %></h5>
+              <p class="card-text"><%= review.comment %></p>
+              <p class="card-text"><strong>Rating:</strong> <%= review.rating %>/5</p>
+
+              <% if(currentUser && review.author && currentUser._id.equals(review.author._id)) { %>
+                <form class="mb-3" method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                  <button class="btn btn-sm btn-dark">Delete</button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+<% } else { %>
+  <p>No reviews yet.</p>
+<% } %>
