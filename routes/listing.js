@@ -22,12 +22,13 @@ function validateListing(req, res, next) {
 // INDEX - show all listings
 router.get("/", async (req, res) => {
     try {
-        const allListings = await Listing.find({});
+        // Using maxTimeMS ensures we don't hit the default Mongo/Mongoose buffering timeout silently.
+        const allListings = await Listing.find({}).maxTimeMS(5000);
         console.log(`📊 Route /listings - Found ${allListings.length} listings`);
-        res.render("listings/index", { listings: allListings });
+        return res.render("listings/index", { listings: allListings });
     } catch (err) {
-        console.error("Error:", err);
-        res.status(500).send("Error");
+        console.error("/listings index error:", err);
+        return res.status(500).render("listings/error.ejs", { message: "Failed to load listings" });
     }
 });
 

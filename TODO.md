@@ -1,10 +1,7 @@
-# Deployment Fix for Listings Not Showing
+- [ ] Verify MongoDB connection string (MONGO_URL) is correct and points to the DB containing the 29 listings
+- [ ] Restart server and load GET /listings
+- [ ] Confirm console log shows 29 listings
+- [ ] If still timing out: increase Mongo/Mongoose timeouts and check serverSelection/connectTimeout
+- [ ] If listings render but are empty: check EJS and ensure listings variable is passed
+- [x] Add maxTimeMS(5000) + improved error handling to routes/listing.js index route
 
-## Completed Tasks
-- [x] Updated `app.js` to require MONGO_URL environment variable and disable mongoose buffering for serverless environments
-- [x] Updated `init/index.js` to use MONGO_URL environment variable instead of hardcoded local URL
-
-## Remaining Tasks
-- [ ] Set MONGO_URL environment variable in Vercel deployment settings
-- [ ] Run the init script in deployment to populate sample data (if needed)
-- [ ] Test the deployment to ensure listings are showing properly
