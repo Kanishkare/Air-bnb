@@ -19,8 +19,8 @@ router.post("/signup",async(req,res)=>{
             return next(err);
         }
          req.flash("success","Welcome to Chill n Go!");
-         const redirectUrl = req.session.redirectUrl || "/listings";
-         res.redirect(redirectUrl);
+         // Always redirect to the full listings page after signup.
+         res.redirect("/listings");
     });
 
     }catch(e){
@@ -38,8 +38,8 @@ router.get("/login",(req,res)=>{
 
 router.post("/login",passport.authenticate("local",{failedRedirect: '/login',failureFlash:true}),async(req,res)=>{
     req.flash("success","welcome back!");
-     const redirectUrl = res.locals.redirectUrl || "/listings";
-     res.redirect(redirectUrl);
+     // Always redirect to the full listings page after login.
+     res.redirect("/listings");
 })
 
 router.get("/logout",(req,res,next)=>{
