@@ -20,13 +20,16 @@ function validateListing(req, res, next) {
 // ======================= ROUTES ======================= //
 
 // INDEX - show all listings
-router.get(
-  "/",
-  wrapAsync(async (req, res) => {
-    const allListings = await Listing.find({}, {}, { maxTimeMS: 30000 }).populate("owner"); // ✅ fixed
-    res.render("listings/index.ejs", { listings: allListings });  // ✅ fixed
-  })
-);
+router.get("/", async (req, res) => {
+    try {
+        const allListings = await Listing.find({});
+        console.log(`📊 Route /listings - Found ${allListings.length} listings`);
+        res.render("listings/index", { listings: allListings });
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("Error");
+    }
+});
 
 // NEW - show form to create listing
 router.get("/new", isLoggedIn, (req, res) => {
