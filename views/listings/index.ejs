@@ -5,8 +5,10 @@
 <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
 
   <p class="text-muted mb-2">Debug: listings array length = <%= (listings && listings.length) ? listings.length : 0 %></p>
+  <p class="text-muted mb-2">Debug first listing title = <%= listings && listings[0] && listings[0].title ? listings[0].title : 'NONE' %></p>
 
   <% for(let listing of listings){ %>
+
 
     <div class="col mb-4">
 
