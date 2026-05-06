@@ -21,10 +21,16 @@ async function startServer() {
       throw new Error("Missing MONGO_URL in environment variables (.env or deployment settings)");
     }
 
-    await mongoose.connect(MONGO_URL, {
+    // DEBUG: show which DB we're connected to
+    const conn = await mongoose.connect(MONGO_URL, {
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 5000,
     });
+    // NOTE: IMPORTANT - conn.connection.name might not reflect the seeded DB in Atlas setups
+    // const actualDbName = conn.connection.db?.databaseName;
+    console.log('✅ Mongo connected using URL:', MONGO_URL);
+    console.log('✅ Mongo db name (connection.name):', conn.connection.name);
+    console.log('✅ Mongo db name (db.databaseName):', conn.connection.db?.databaseName);
     console.log("✅ MongoDB Connected");
 
 

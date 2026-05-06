@@ -19,8 +19,12 @@ async function main() {
 
 const initdb = async () => {
   try {
-
-    await Listing.deleteMany({});
+    const count = await Listing.estimatedDocumentCount();
+    if (count > 0) {
+      console.log(`ℹ️ Seed skipped: Listing collection already has ${count} documents`);
+      await mongoose.connection.close();
+      return;
+    }
 
     const sampleData = initdata.data.map((obj) => ({
       ...obj,
@@ -31,12 +35,9 @@ const initdb = async () => {
 
     console.log("✅ Database initialized");
 
-    mongoose.connection.close();
-
+    await mongoose.connection.close();
   } catch (err) {
-
     console.log(err);
-
   }
 };
 

@@ -5,31 +5,29 @@ const wrapAsync = require("../utils/wrapAsync.js");
 const { listingSchema } = require("../schema.js");
 const ExpressError = require("../utils/ExpressError.js");
 const Listing = require("../models/listing.js");
-const { isLoggedIn , isOwner  } = require("../middleware.js");
+const { isLoggedIn, isOwner } = require("../middleware.js");
 
-// ✅ Middleware to validate listing
 function validateListing(req, res, next) {
   const { error } = listingSchema.validate(req.body);
   if (error) {
     const errMsg = error.details.map((el) => el.message).join(", ");
     throw new ExpressError(400, errMsg);
-  } else {
-    next();
   }
+  next();
 }
-
-// ======================= ROUTES ======================= //
 
 // INDEX - show all listings
 router.get("/", async (req, res) => {
   try {
-    // Query all listings and explicitly ensure we return plain docs for the EJS loop.
-    const allListings = await Listing.find({}).lean().maxTimeMS(5000);
+    const allListings = await Listing.find({});
     console.log(`✅ Route /listings - Found ${allListings.length} listings`);
+    console.log("✅ Route /listings first title:", allListings[0]?.title);
     return res.render("listings/index", { listings: allListings });
   } catch (err) {
     console.error("/listings index error:", err);
-    return res.status(500).render("listings/error.ejs", { message: "Failed to load listings" });
+    return res.status(500).render("listings/error.ejs", {
+      message: "Failed to load listings",
+    });
   }
 });
 
@@ -45,7 +43,7 @@ router.post(
   validateListing,
   wrapAsync(async (req, res) => {
     const newListing = new Listing(req.body.listing);
-    newListing.owner = req.user._id; // ✅ associate logged-in user
+    newListing.owner = req.user._id;
     await newListing.save();
     req.flash("success", "Successfully made a new listing!");
     res.redirect(`/listings/${newListing._id}`);
@@ -102,17 +100,18 @@ router.delete(
   })
 );
 
-// SHOW - show one listing (⚠️ keep this LAST)
+// SHOW - show one listing
 router.get(
   "/:id",
   wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listing = await Listing.findById(id)
       .populate("reviews")
-      .populate("owner"); // ✅ include owner
+      .populate("owner");
     if (!listing) throw new ExpressError(404, "Listing Not Found");
     res.render("listings/show.ejs", { listing });
   })
 );
 
 module.exports = router;
+
