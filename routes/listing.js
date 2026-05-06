@@ -21,15 +21,15 @@ function validateListing(req, res, next) {
 
 // INDEX - show all listings
 router.get("/", async (req, res) => {
-    try {
-        // Using maxTimeMS ensures we don't hit the default Mongo/Mongoose buffering timeout silently.
-        const allListings = await Listing.find({}).maxTimeMS(5000);
-        console.log(`📊 Route /listings - Found ${allListings.length} listings`);
-        return res.render("listings/index", { listings: allListings });
-    } catch (err) {
-        console.error("/listings index error:", err);
-        return res.status(500).render("listings/error.ejs", { message: "Failed to load listings" });
-    }
+  try {
+    // Query all listings and explicitly ensure we return plain docs for the EJS loop.
+    const allListings = await Listing.find({}).lean().maxTimeMS(5000);
+    console.log(`✅ Route /listings - Found ${allListings.length} listings`);
+    return res.render("listings/index", { listings: allListings });
+  } catch (err) {
+    console.error("/listings index error:", err);
+    return res.status(500).render("listings/error.ejs", { message: "Failed to load listings" });
+  }
 });
 
 // NEW - show form to create listing
