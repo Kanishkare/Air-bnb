@@ -103,22 +103,22 @@ Users can:
 ## Screenshots
 
 ### Homepage
-![Homepage](./screenshots/Homepage.png)
+![Homepage](.models/screenshots/Homepage.png)
 
 ### Listings
-![Listings](./screenshots/Listings.png)
+![Listings](.models/screenshots/Listings.png)
 
 ### Login
-![Login](./screenshots/Login.png)
+![Login](.models/screenshots/Login.png)
 
 ### Signup
-![Signup](./screenshots/Signup.png)
+![Signup](.models/screenshots/Signup.png)
 
 ### Create Listing
-![Create Listing](./screenshots/createlistings.png)
+![Create Listing](.models/screenshots/createlistings.png)
 
 ### Review Page
-![Review](./screenshots/Review.png)
+![Review](.models/screenshots/Review.png)
 
 # Folder Structure
 
