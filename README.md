@@ -100,47 +100,25 @@ Users can:
 
 ---
 
-# Screenshots
+## Screenshots
 
-## Listings Page
+### Homepage
+![Homepage](./screenshots/Homepage.png)
 
-Shows all available stays with pricing and images.
+### Listings
+![Listings](./screenshots/Listings.png)
 
-![Listings Page](./screenshots/listings.png)
+### Login
+![Login](./screenshots/Login.png)
 
----
+### Signup
+![Signup](./screenshots/Signup.png)
 
-## Signup Page
+### Create Listing
+![Create Listing](./screenshots/createlistings.png)
 
-User registration with authentication.
-
-![Signup Page](./screenshots/signup.png)
-
----
-
-## Login Page
-
-Secure login functionality.
-
-![Login Page](./screenshots/login.png)
-
----
-
-## Create Listing Page
-
-Users can add new property listings.
-
-![Create Listing](./screenshots/create-listing.png)
-
----
-
-## Listing Details Page
-
-Detailed view of selected property.
-
-![Listing Details](./screenshots/listing-details.png)
-
----
+### Review Page
+![Review](./screenshots/Review.png)
 
 # Folder Structure
 
